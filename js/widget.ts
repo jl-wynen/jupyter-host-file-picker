@@ -79,6 +79,11 @@ function render({ model, el }: RenderProps<WidgetModel>) {
 
     const dragCleanup = makeDraggable(dialog, header);
     const resizeCleanup = makeResizable(dialog);
+    dialog.addEventListener("keydown", (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+            dialog.close();
+        }
+    });
 
     document.body.appendChild(dialog);
     dialog.show();
