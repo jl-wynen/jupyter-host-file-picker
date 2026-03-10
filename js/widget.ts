@@ -101,6 +101,7 @@ function renderHeader(
     path: string,
 ): [HTMLElement, PathView] {
     const pathView = new PathView(path, model.get("_pathSep"));
+    pathView.element.autofocus = true;
 
     const header = document.createElement("header");
     header.classList.add("jphf-nav-bar");
