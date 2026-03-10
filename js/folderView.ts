@@ -113,6 +113,7 @@ export class FolderView extends EventTarget {
         currentRow.ariaSelected = "true";
         table.ariaActiveDescendantElement = currentRow;
         currentRow.scrollIntoView({ block: "nearest" });
+        this.dispatchEvent(new FileMarkedEvent([this.fileInfos[index]]));
     }
 
     populate(files: FileInfo[]) {
