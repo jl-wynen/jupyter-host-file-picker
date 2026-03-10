@@ -7,7 +7,7 @@ export class FolderView extends EventTarget {
     private fileInfos: FileInfo[] = [];
     private currentIndex: number | null = null;
     private loadingTimeout: number | null = null;
-    private refreshInterval?: NodeJS.Timeout;
+    private refreshInterval?: ReturnType<typeof setTimeout>;
 
     constructor() {
         super();
