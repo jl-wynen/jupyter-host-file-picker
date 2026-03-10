@@ -8,6 +8,7 @@ import {
     jsonIcon,
     pythonIcon,
     spreadsheetIcon,
+    homeIcon as jpHomeIcon,
     caretUpIcon,
     pdfIcon,
     videoIcon,
@@ -47,5 +48,6 @@ export function iconForFileType(fileType: string): LabIcon {
     }
 }
 
-export const upIcon = caretUpIcon;
 export const closeIcon = jpCloseIcon;
+export const homeIcon = jpHomeIcon;
+export const upIcon = caretUpIcon;

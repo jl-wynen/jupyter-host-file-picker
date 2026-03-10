@@ -58,4 +58,8 @@ export class BackendComm {
     sendReqListParent(payload: ReqListParentPayload) {
         this.model.send({ type: "req:list-parent", payload });
     }
+
+    sendReqListHome() {
+        this.model.send({ type: "req:list-home", payload: {} });
+    }
 }
