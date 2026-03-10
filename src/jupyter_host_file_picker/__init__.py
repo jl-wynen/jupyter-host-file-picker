@@ -48,16 +48,21 @@ class HostFilePicker(anywidget.AnyWidget):
 def _handle_message(
     widget: HostFilePicker, content: dict[str, Any], buffers: object
 ) -> None:
+    message = None
     match content.get("type"):
         case "req:list-dir":
-            payload = _list_dir(Path(content["payload"]["path"]))
+            message = _list_dir(Path(content["payload"]["path"]))
         case "req:list-parent":
-            payload = _list_parent(Path(content["payload"]["path"]))
+            message = _list_parent(Path(content["payload"]["path"]))
+        case "req:list-home":
+            message = _list_dir(Path.home())
+        case "req:list-cwd":
+            message = _list_dir(Path.cwd())
         case _:
             logging.getLogger(__name__).warning("Unknown message type: %s", content)
 
-    if payload is not None:
-        widget.send(payload)
+    if message is not None:
+        widget.send(message)
 
 
 def _list_dir(path: Path) -> dict[str, Any] | None:

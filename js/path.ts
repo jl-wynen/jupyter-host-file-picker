@@ -1,38 +1,26 @@
-export class PathState {
-    private _current: string;
-
-    constructor(current: string) {
-        this._current = current;
-    }
-
-    get current() {
-        return this._current;
-    }
-
-    insertNew(path: string) {
-        this._current = path;
-    }
-}
-
 export class PathView {
-    private readonly pathState: PathState;
+    private path: string;
     private readonly pathSep: string;
     private readonly el: HTMLInputElement;
 
-    constructor(pathState: PathState, pathSep: string) {
-        this.pathState = pathState;
+    constructor(path: string, pathSep: string) {
+        this.path = path;
         this.pathSep = pathSep;
         this.el = document.createElement("input");
         this.el.type = "text";
-        this.el.value = pathState.current;
+        this.el.value = path;
     }
 
     get element(): HTMLInputElement {
         return this.el;
     }
 
+    get current(): string {
+        return this.path;
+    }
+
     setTo(path: string) {
-        this.pathState.insertNew(path);
+        this.path = path;
         this.el.value = path;
     }
 
@@ -53,7 +41,7 @@ export class PathView {
      * update before the proper path is available.
      */
     setToParentProspective() {
-        let current = this.pathState.current;
+        let current = this.current;
         if (current.endsWith(this.pathSep)) {
             current = current.slice(0, -1);
         }
@@ -61,7 +49,7 @@ export class PathView {
         if (index === -1) {
             this.el.value = "";
         } else {
-            this.el.value = this.pathState.current.slice(0, index) + this.pathSep;
+            this.el.value = current.slice(0, index) + this.pathSep;
         }
     }
 
