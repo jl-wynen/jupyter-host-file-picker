@@ -88,19 +88,25 @@
     user-select: none;
 }
 
-.jphf-button[disabled] {
-    color: var(--jp-ui-font-color2);
-    background: var(--jp-layout-color1);
-    cursor: default;
-
+.jphf-button {
     &:hover {
+        color: var(--jp-ui-font-color0);
+    }
+
+    &:active {
+        background: var(--jp-layout-color3);
+    }
+
+    &[disabled] {
         color: var(--jp-ui-font-color2);
         background: var(--jp-layout-color1);
-    }
-}
+        cursor: default;
 
-.jphf-button:hover {
-    color: var(--jp-ui-font-color0);
+        &:hover {
+            color: var(--jp-ui-font-color2);
+            background: var(--jp-layout-color1);
+        }
+    }
 }
 
 .jphf-select-button {
@@ -142,6 +148,10 @@
         }
     }
 
+    &:active {
+        background: var(--jp-layout-color4);
+    }
+
     &[disabled] {
         & path {
             fill: var(--jp-ui-font-color3) !important;
@@ -160,13 +170,17 @@
 .jphf-close-button {
     border-radius: 50% !important;
 
-    & svg {
+    svg {
         width: 75%;
         height: 75%;
     }
 
     &:hover {
         background: var(--jp-error-color2);
+    }
+
+    &:active {
+        background: var(--jp-error-color1);
     }
 }
 
