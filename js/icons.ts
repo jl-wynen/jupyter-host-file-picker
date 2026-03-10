@@ -18,6 +18,7 @@ import {
 } from "@jupyterlab/ui-components";
 import hdfSvg from "./assets/hdf.svg";
 import stepBackward from "./assets/step-backward.svg";
+import { FileType } from "./fileType";
 
 const hdfIcon = new LabIcon({ name: "jphf:hdf", svgstr: hdfSvg });
 const stepBackwardIcon = new LabIcon({
@@ -25,7 +26,7 @@ const stepBackwardIcon = new LabIcon({
     svgstr: stepBackward,
 });
 
-export function iconForFileType(fileType: string): LabIcon {
+export function iconForFileType(fileType: FileType): LabIcon {
     switch (fileType) {
         case "folder":
             return folderIcon;

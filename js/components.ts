@@ -35,7 +35,7 @@ export function iconButton(
     const button = document.createElement("button");
     button.classList.add("jphf-icon-button");
     icon.element({ container: button });
-    button.setAttribute("aria-title", title);
+    button.setAttribute("aria-label", title);
     button.title = title;
     button.addEventListener("click", callback);
     return button;

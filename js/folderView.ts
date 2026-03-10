@@ -7,7 +7,7 @@ export class FolderView extends EventTarget {
     private fileInfos: FileInfo[] = [];
     private currentIndex: number | null = null;
     private loadingTimeout: number | null = null;
-    private refreshInterval?: number;
+    private refreshInterval?: NodeJS.Timeout;
 
     constructor() {
         super();
@@ -41,7 +41,6 @@ export class FolderView extends EventTarget {
             }
         });
 
-        // @ts-ignore
         this.refreshInterval = setInterval(() => this.refreshModifiedDates(), 60_000);
     }
 

@@ -1,11 +1,12 @@
 import { AnyModel } from "@anywidget/types";
+import { FileType } from "./fileType";
 
 export type FileInfo = {
     modified: string;
     name: string;
     path: string;
     size: number;
-    type: string;
+    type: FileType;
 };
 
 /** Request listing a directory. */

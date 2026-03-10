@@ -30,8 +30,7 @@ export function humanSize(size: number | null): HTMLSpanElement {
  * @returns Approximate duration in from `date` to `reference`.
  */
 export function approxDurationSince(date: Date, reference: Date): string {
-    // @ts-ignore
-    const diff = (reference - date) / 1000; // time delta in seconds
+    const diff = (reference.getTime() - date.getTime()) / 1000; // time delta in seconds
     if (diff < 0) {
         return date.toISOString();
     }
