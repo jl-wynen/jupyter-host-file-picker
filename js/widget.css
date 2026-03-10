@@ -1,22 +1,27 @@
 .jphf-dialog {
-    padding: 0;
-    border: 1px solid var(--jp-border-color1);
-    border-radius: 0;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
-    width: 50em;
-    height: 40em;
-    overflow: visible;
-    position: fixed;
-    top: 100px;
-    left: 100px;
-    margin: 0;
-    background: var(--jp-layout-color1);
-    color: var(--jp-ui-font-color1);
+    /* These are overridden in JS on drag and resize */
+    --initial-width: 50em;
+    --initial-height: 40em;
+    width: var(--initial-width);
+    height: var(--initial-height);
+    top: calc(50vh - var(--initial-height)/2);
+    left: calc(50vw - var(--initial-width)/2);
+
     min-width: 150px;
     min-height: 100px;
     max-width: 100vw;
     max-height: 100vh;
     box-sizing: border-box;
+
+    padding: 0;
+    border: 1px solid var(--jp-border-color1);
+    border-radius: 0;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
+    overflow: visible;
+    position: fixed;
+    margin: 0;
+    background: var(--jp-layout-color1);
+    color: var(--jp-ui-font-color1);
     display: none;
     flex-direction: column;
     container-type: inline-size;
@@ -83,19 +88,25 @@
     user-select: none;
 }
 
-.jphf-button[disabled] {
-    color: var(--jp-ui-font-color2);
-    background: var(--jp-layout-color1);
-    cursor: default;
-
+.jphf-button {
     &:hover {
+        color: var(--jp-ui-font-color0);
+    }
+
+    &:active {
+        background: var(--jp-layout-color3);
+    }
+
+    &[disabled] {
         color: var(--jp-ui-font-color2);
         background: var(--jp-layout-color1);
-    }
-}
+        cursor: default;
 
-.jphf-button:hover {
-    color: var(--jp-ui-font-color0);
+        &:hover {
+            color: var(--jp-ui-font-color2);
+            background: var(--jp-layout-color1);
+        }
+    }
 }
 
 .jphf-select-button {
@@ -115,8 +126,8 @@
     align-items: center;
     justify-content: center;
     padding: 0;
-    width: 1.5em;
-    height: 1.5em;
+    width: 1.2em;
+    height: 1.2em;
     line-height: 0;
 
     & svg {
@@ -137,6 +148,10 @@
         }
     }
 
+    &:active {
+        background: var(--jp-layout-color4);
+    }
+
     &[disabled] {
         & path {
             fill: var(--jp-ui-font-color3) !important;
@@ -150,18 +165,38 @@
             background: none;
         }
     }
+
+}
+
+.jphf-nav-bar {
+    /* Adjust individual icon buttons to get a consistent size */
+    button:nth-child(1){
+        width: 1.5em;
+        height: 1.5em;
+    }
+
+    button:nth-child(2){
+        width: 1em;
+        height: 1em;
+    }
 }
 
 .jphf-close-button {
     border-radius: 50% !important;
+    width: 1.5em;
+    height: 1.5em;
 
-    & svg {
+    svg {
         width: 75%;
         height: 75%;
     }
 
     &:hover {
         background: var(--jp-error-color2);
+    }
+
+    &:active {
+        background: var(--jp-error-color1);
     }
 }
 

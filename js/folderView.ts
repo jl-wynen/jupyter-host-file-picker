@@ -3,8 +3,9 @@ import { iconForFileType } from "./icons.ts";
 import { humanSize, approxDurationSince } from "./output.ts";
 
 export class FolderView extends EventTarget {
-    readonly container: HTMLDivElement;
-    private selected: FileInfo[] = [];
+    private readonly container: HTMLDivElement;
+    private fileInfos: FileInfo[] = [];
+    private currentIndex: number | null = null;
     private loadingTimeout: number | null = null;
     private refreshInterval?: NodeJS.Timeout;
 
@@ -13,6 +14,33 @@ export class FolderView extends EventTarget {
         this.container = document.createElement("div");
         this.container.classList.add("jphf-folder-view");
 
+        this.container.addEventListener("keydown", (event: KeyboardEvent) => {
+            if (event.key === "ArrowDown") {
+                event.preventDefault();
+                const next = Math.min(
+                    (this.currentIndex ?? -1) + 1,
+                    this.fileInfos.length - 1,
+                );
+                this.setCurrent(next);
+            } else if (event.key === "ArrowUp") {
+                event.preventDefault();
+                const next = Math.max(
+                    (this.currentIndex ?? this.fileInfos.length - 1) - 1,
+                    0,
+                );
+                this.setCurrent(next);
+            } else if (event.key === "Home") {
+                event.preventDefault();
+                this.setCurrent(0);
+            } else if (event.key === "End") {
+                this.setCurrent(this.fileInfos.length - 1);
+            } else if (event.key === "Enter" || event.key == "NumpadEnter") {
+                event.preventDefault();
+                event.stopPropagation();
+                this.dispatchEvent(new FileSelectedEvent(this.selectedFiles));
+            }
+        });
+
         this.refreshInterval = setInterval(() => this.refreshModifiedDates(), 60_000);
     }
 
@@ -20,8 +48,14 @@ export class FolderView extends EventTarget {
         return this.container;
     }
 
-    get selectedFiles() {
-        return this.selected;
+    get selectedFiles(): FileInfo[] {
+        let selected = [];
+        for (const row of this.container.querySelectorAll(
+            "[role='option'][aria-selected='true']",
+        )) {
+            selected.push(this.fileInfos[Number((row as HTMLElement).dataset.index)]);
+        }
+        return selected;
     }
 
     showLoading() {
@@ -66,9 +100,24 @@ export class FolderView extends EventTarget {
         this.refreshInterval = undefined;
     }
 
+    private setCurrent(index: number) {
+        const table = this.container.querySelector("table")!;
+        const rows = Array.from(table.querySelectorAll("[role='option']"));
+        for (const row of rows) {
+            row.ariaSelected = "false";
+        }
+
+        const currentRow = rows[index];
+        this.currentIndex = index;
+        currentRow.ariaSelected = "true";
+        table.ariaActiveDescendantElement = currentRow;
+        currentRow.scrollIntoView({ block: "nearest" });
+        this.dispatchEvent(new FileMarkedEvent([this.fileInfos[index]]));
+    }
+
     populate(files: FileInfo[]) {
         this.clearLoading();
-        files.sort((a, b) => {
+        this.fileInfos = files.sort((a, b) => {
             // Folders first
             if (a.type === "folder" && b.type !== "folder") return -1;
             if (a.type !== "folder" && b.type === "folder") return 1;
@@ -78,9 +127,13 @@ export class FolderView extends EventTarget {
 
         const now = new Date(Date.now());
         const [table, tbody] = createFileTableElement();
-        for (const info of files) {
+        for (const [index, info] of files.entries()) {
             const row = tbody.insertRow();
+            row.id = `jphf-file-${index}`;
+            row.dataset.index = index.toString();
             row.classList.add("jphf-file-list-item");
+            row.role = "option";
+            row.ariaSelected = "false";
 
             const iconCell = row.insertCell();
             iconCell.classList.add("jphf-file-icon-cell");
@@ -115,16 +168,13 @@ export class FolderView extends EventTarget {
 
             row.addEventListener("click", (event: MouseEvent) => {
                 event.preventDefault();
-                for (const row of table.querySelectorAll("tr")) {
-                    row.ariaSelected = "false";
-                }
-                row.ariaSelected = "true";
-                this.selected = [info];
-                this.dispatchEvent(new FileMarkedEvent([info]));
+                table.focus();
+                this.setCurrent(index);
             });
 
             row.addEventListener("dblclick", (event: MouseEvent) => {
                 event.preventDefault();
+                this.setCurrent(index);
                 this.dispatchEvent(new FileSelectedEvent([info]));
             });
         }
@@ -147,6 +197,9 @@ export class FileMarkedEvent extends Event {
 function createFileTableElement(): [HTMLTableElement, HTMLTableSectionElement] {
     const table = document.createElement("table");
     table.classList.add("jphf-file-table");
+    table.role = "listbox";
+    table.ariaLabel = "Files";
+    table.tabIndex = 0; // needs to be focusable for keyboard events
 
     const header = table.createTHead();
     const row = header.insertRow();

@@ -3,10 +3,16 @@ import "./widget.css";
 import { FileInfo, ResListDirPayload, BackendComm } from "./comm.ts";
 import { FolderView, FileMarkedEvent, FileSelectedEvent } from "./folderView.ts";
 import { button, iconButton } from "./components.ts";
-import { backIcon, closeIcon, forwardIcon, upIcon } from "./icons.ts";
+import {
+    closeIcon,
+    workingDirIcon,
+    circleArrowIcon,
+    homeIcon,
+    upIcon,
+} from "./icons.ts";
 import { SelectButton } from "./selectButton.ts";
 import { makeDraggable, makeResizable } from "./windowing.ts";
-import { PathState, PathView } from "./path.ts";
+import { PathView } from "./path.ts";
 
 interface WidgetModel {
     _initialPath: string;
@@ -16,7 +22,7 @@ interface WidgetModel {
 
 function render({ model, el }: RenderProps<WidgetModel>) {
     const comm = new BackendComm(model);
-    const pathState = new PathState(model.get("_initialPath"));
+    const path = model.get("_initialPath");
 
     el.classList.add("jupyter-host-file-picker");
     el.style.position = "relative";
@@ -25,7 +31,7 @@ function render({ model, el }: RenderProps<WidgetModel>) {
     const dialog = document.createElement("dialog");
     dialog.className = "jphf-dialog";
 
-    const [header, pathView] = renderHeader(dialog, comm, model, pathState);
+    const [header, pathView] = renderHeader(dialog, comm, model, path);
     dialog.appendChild(header);
 
     const content = document.createElement("div");
@@ -58,12 +64,11 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         } else {
             // TODO check folder path to make sure we get the message for the correct folder
             pathView.setTo(payload.path);
-            pathState.insertNew(payload.path);
             folderView.populate(payload.files);
         }
     });
     folderView.showLoading();
-    comm.sendReqListDir({ path: pathState.current });
+    comm.sendReqListDir({ path: pathView.current });
 
     dialog.appendChild(content);
 
@@ -79,6 +84,11 @@ function render({ model, el }: RenderProps<WidgetModel>) {
 
     const dragCleanup = makeDraggable(dialog, header);
     const resizeCleanup = makeResizable(dialog);
+    dialog.addEventListener("keydown", (event: KeyboardEvent) => {
+        if (event.key === "Escape") {
+            dialog.close();
+        }
+    });
 
     document.body.appendChild(dialog);
     dialog.show();
@@ -94,25 +104,39 @@ function renderHeader(
     dialog: HTMLDialogElement,
     comm: BackendComm,
     model: AnyModel<WidgetModel>,
-    pathState: PathState,
+    path: string,
 ): [HTMLElement, PathView] {
+    const pathView = new PathView(path, model.get("_pathSep"));
+    pathView.element.autofocus = true;
+
     const header = document.createElement("header");
     header.classList.add("jphf-nav-bar");
 
-    const backButton = iconButton(backIcon, "Previous folder", () => {});
-    backButton.setAttribute("disabled", "");
-    header.appendChild(backButton);
-    const forwardButton = iconButton(forwardIcon, "Next folder", () => {});
-    forwardButton.setAttribute("disabled", "");
-    header.appendChild(forwardButton);
     header.appendChild(
         iconButton(upIcon, "Parent folder", () => {
             pathView.setToParentProspective();
-            comm.sendReqListParent({ path: pathState.current });
+            comm.sendReqListParent({ path: pathView.current });
         }),
     );
 
-    const pathView = new PathView(pathState, model.get("_pathSep"));
+    header.appendChild(
+        iconButton(workingDirIcon, "Current working directory", () => {
+            comm.sendReqListCwd();
+        }),
+    );
+
+    header.appendChild(
+        iconButton(homeIcon, "Home", () => {
+            comm.sendReqListHome();
+        }),
+    );
+
+    header.appendChild(
+        iconButton(circleArrowIcon, "Refresh", () => {
+            comm.sendReqListDir({ path: pathView.current });
+        }),
+    );
+
     pathView.onInput((path: string) => comm.sendReqListDir({ path }));
     // Do not move the window from the input element:
     pathView.element.addEventListener("mousedown", (e: MouseEvent) =>
