@@ -25,6 +25,16 @@ export function makeDraggable(
     const minVisible = 30;
 
     triggerElement.addEventListener("mousedown", (e) => {
+        const target = e.target as HTMLElement | null;
+        if (
+            target?.closest(
+                'button, input, textarea, select, option, a, [role="button"]',
+            )
+        ) {
+            // Do not allow dragging from interactive elements.
+            return;
+        }
+
         element.classList.add("jphf-dragging");
         isDragging = true;
         startX = e.clientX;
