@@ -55,6 +55,7 @@ class HostFilePicker(anywidget.AnyWidget):
             if initial_path is None
             else _format_folder_path(Path(initial_path).absolute()),
             _pathSep=os.sep,
+            _remember=remember,
         )
 
         self.on_msg(_handle_message)
