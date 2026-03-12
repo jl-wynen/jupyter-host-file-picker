@@ -67,4 +67,11 @@ export class BackendComm {
     sendReqListCwd() {
         this.model.send({ type: "req:list-cwd", payload: {} });
     }
+
+    /**
+     * List contents of a directory if possible, else list contents of CWD.
+     */
+    sendReqListDirWithFallback(payload: ReqListDirPayload) {
+        this.model.send({ type: "req:list-dir-with-fallback", payload });
+    }
 }

@@ -24,16 +24,36 @@ class HostFilePicker(anywidget.AnyWidget):
     _esm = pathlib.Path(__file__).parent / "static" / "widget.js"
     _css = pathlib.Path(__file__).parent / "static" / "widget.css"
 
-    _initialPath = traitlets.Unicode().tag(sync=True)
+    _initialPath = traitlets.Union(
+        [traitlets.Unicode(), traitlets.Instance(type(None))]
+    ).tag(sync=True)
     _pathSep = traitlets.Unicode().tag(sync=True)
     _selected = traitlets.List(trait=traitlets.Unicode()).tag(sync=True)
+    _remember = traitlets.Bool().tag(sync=True)
 
     selected = traitlets.List(trait=traitlets.Instance(Path)).tag()
 
-    def __init__(self, initial_path: os.PathLike[str] | str = ".") -> None:
-        initial_path = Path(initial_path).absolute()
+    def __init__(
+        self, initial_path: os.PathLike[str] | str | None = None, remember: bool = True
+    ) -> None:
+        """Create a new host file picker.
+
+        Parameters
+        ----------
+        initial_path:
+            Start in this path.
+            If not given, use the last path shown in a previous file picker or
+            the current working directory.
+        remember:
+            If True, the file picker stores information about where on the filesystem
+            you navigate and how you configure the file picker.
+            When you open a new file picker, it loads the saved information.
+            All data is stored in your browser.
+        """
         super().__init__(
-            _initialPath=_format_folder_path(initial_path),
+            _initialPath=None
+            if initial_path is None
+            else _format_folder_path(Path(initial_path).absolute()),
             _pathSep=os.sep,
         )
 
@@ -58,6 +78,8 @@ def _handle_message(
             message = _list_dir(Path.home())
         case "req:list-cwd":
             message = _list_dir(Path.cwd())
+        case "req:list-dir-with-fallback":
+            message = _list_dir_with_fallback(Path(content["payload"]["path"]))
         case _:
             logging.getLogger(__name__).warning("Unknown message type: %s", content)
 
@@ -79,6 +101,13 @@ def _list_dir(path: Path) -> dict[str, Any] | None:
         payload = {"path": _format_folder_path(path), "files": files, "isFile": False}
 
     return {"type": "res:list-dir", "payload": payload}
+
+
+def _list_dir_with_fallback(path: Path) -> dict[str, Any] | None:
+    requested = _list_dir(path)
+    if requested is None:
+        return _list_dir(Path.cwd())
+    return requested
 
 
 def _list_parent(path: Path) -> dict[str, Any] | None:

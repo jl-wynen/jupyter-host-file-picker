@@ -13,16 +13,17 @@ import {
 import { SelectButton } from "./selectButton.ts";
 import { makeDraggable, makeResizable } from "./windowing.ts";
 import { PathView } from "./path.ts";
+import { getLatestPath } from "./storage.ts";
 
 interface WidgetModel {
-    _initialPath: string;
+    _initialPath: string | null;
     _pathSep: string;
     _selected: string[];
+    _remember: boolean;
 }
 
 function render({ model, el }: RenderProps<WidgetModel>) {
     const comm = new BackendComm(model);
-    const path = model.get("_initialPath");
 
     el.classList.add("jupyter-host-file-picker");
     el.style.position = "relative";
@@ -31,7 +32,7 @@ function render({ model, el }: RenderProps<WidgetModel>) {
     const dialog = document.createElement("dialog");
     dialog.className = "jphf-dialog";
 
-    const [header, pathView] = renderHeader(dialog, comm, model, path);
+    const [header, pathView] = renderHeader(dialog, comm, model);
     dialog.appendChild(header);
 
     const content = document.createElement("div");
@@ -68,7 +69,7 @@ function render({ model, el }: RenderProps<WidgetModel>) {
         }
     });
     folderView.showLoading();
-    comm.sendReqListDir({ path: pathView.current });
+    listInitialDir(comm, model);
 
     dialog.appendChild(content);
 
@@ -104,9 +105,12 @@ function renderHeader(
     dialog: HTMLDialogElement,
     comm: BackendComm,
     model: AnyModel<WidgetModel>,
-    path: string,
 ): [HTMLElement, PathView] {
-    const pathView = new PathView(path, model.get("_pathSep"));
+    const pathView = new PathView(
+        model.get("_initialPath") || ".",
+        model.get("_pathSep"),
+        model.get("_remember"),
+    );
     pathView.element.autofocus = true;
 
     const header = document.createElement("header");
@@ -162,6 +166,13 @@ function renderFooter(dialog: HTMLDialogElement): [HTMLElement, SelectButton] {
     footer.append(selectButton.element);
 
     return [footer, selectButton];
+}
+
+function listInitialDir(comm: BackendComm, model: AnyModel<WidgetModel>) {
+    // Make sure that we always have a valid path to list.
+    // CWD should be a good fallback.
+    const path = model.get("_initialPath") || getLatestPath() || ".";
+    comm.sendReqListDirWithFallback({ path });
 }
 
 export default { render };

@@ -1,11 +1,15 @@
+import { setLatestPath } from "./storage.ts";
+
 export class PathView {
     private path: string;
     private readonly pathSep: string;
+    private readonly remember: boolean;
     private readonly el: HTMLInputElement;
 
-    constructor(path: string, pathSep: string) {
+    constructor(path: string, pathSep: string, remember: boolean) {
         this.path = path;
         this.pathSep = pathSep;
+        this.remember = remember;
         this.el = document.createElement("input");
         this.el.type = "text";
         this.el.value = path;
@@ -22,6 +26,9 @@ export class PathView {
     setTo(path: string) {
         this.path = path;
         this.el.value = path;
+        if (this.remember) {
+            setLatestPath(path);
+        }
     }
 
     /** Set the displayed value to the given path.
