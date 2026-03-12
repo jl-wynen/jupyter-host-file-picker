@@ -12,6 +12,7 @@ export class PathView {
         this.remember = remember;
         this.el = document.createElement("input");
         this.el.type = "text";
+        this.el.spellcheck = false;
         this.el.value = path;
     }
 
